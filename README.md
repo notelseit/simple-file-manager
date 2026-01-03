@@ -1,35 +1,54 @@
-simple-file-manager
-===================
+# simple-file-manager
 
-A Simple PHP file manager.  The code is a single php file.  
+A lightweight, single-file **PHP File Manager**, modernized and hardened for **PHP 8.x** environments.
 
-Just copy `index.php` to a folder on your webserver.  
+Originally created by John Campbell, this version has been **patched and updated** to fix deprecated features, improve security, and ensure compatibility with modern servers (PHP-FPM, nginx, aaPanel, etc.).
 
-## Why it is good
+---
 
-- Single file, there are no images, or css folders.  
-- Ajax based so it is fast, but doesn't break the back button
-- Allows drag and drop file uploads if the folder is writable by the webserver (`chmod 777 your/folder`)
-- Suits my aesthetics.  More like Dropbox, and less like Windows Explorer
-- Works with Unicode file names
-- The interface is usable from an iPad
-- XSRF protection, and an optional password.
+## ✨ Features
 
-## Do not allow uploads on the public web
+- 📄 **Single PHP file** – no external assets, no build steps
+- ⚡ **AJAX-based interface** – fast, responsive, back-button friendly
+- 🖱️ **Drag & Drop uploads** (when directory is writable)
+- 🌍 **Unicode / UTF-8 filenames support**
+- 📱 **Usable on tablets (iPad compatible UI)**
+- 🛡️ **XSRF protection**
+- 🔐 **Optional password protection**
+- 📂 **Recursive delete with permission checks**
+- ⬇️ **Secure file download handling**
+- 🎨 Minimal, clean UI (Dropbox-style, not Explorer-style)
 
-If you allow uploads on the public web, it is only a matter of time before your server is hosting and serving very illegal content. Any of the following options will prevent this:
- - Don't make the folder writable by the webserver `chmod 775`
- - Set `$allow_upload = false`
- - Use a password `$PASSWORD = 'some password'`
- - Use a `.htaccess` file with Apache, or `auth_basic` for nginx
- - Only use this on a private network
+---
 
-HT: [@beardog108](https://github.com/beardog108)
+## 🆕 What’s New in the Updated Version
 
-## Forks
+This fork includes important improvements over the original project:
 
-- **Edit feature**. An extension of the initial project which lets you edit files and save them from the main php file. Works asynchronously with ajax requests. Link: [@diego95root](https://github.com/diego95root/File-manager-php)
+### Backend (PHP)
+- ✅ Full **PHP 8.0 / 8.1 / 8.2 compatibility**
+- ✅ Fixed deprecated functions and warnings
+- ✅ Hardened **path traversal protection**
+- ✅ Improved **XSRF validation**
+- ✅ Safer file upload handling
+- ✅ Fixed `mime_content_type()` fallback
+- ✅ Fixed recursive delete permission checks
+- ✅ Removed debug output (`var_dump`)
+- ✅ Proper HTTP headers and JSON responses
 
-## Screenshot
+### Frontend (JavaScript)
+- ✅ Removed deprecated jQuery `.live()`
+- ✅ Compatible with newer jQuery versions
+- ✅ Fixed invalid HTML markup
+- ✅ Improved event handling
 
-![Screenshot](https://raw.github.com/jcampbell1/simple-file-manager/master/screenshot.png "Screenshot")
+---
+
+## 🚀 Installation
+
+1. Copy `index.php` into a directory on your web server
+2. Make sure PHP is enabled (PHP 8.x recommended)
+3. Open the file in your browser
+
+```bash
+cp index.php /var/www/html/files/
