@@ -1,26 +1,39 @@
 <?php
 
 /****************************************************
- Simple PHP File Manager – Hardened & Modernized
+ Simple PHP File Manager – Hardened Public Fork
+ ----------------------------------------------------
  Original Author: John Campbell
- License: MIT
+ Original License: MIT
 
- Patched & Extended by Notelseit
- - PHP 8.x compatibility
+ Public Fork & Maintainer:
+ Notelseit S.R.L.S.
+ https://www.notelseit.com
+
+ Enhancements & Maintenance:
+ - PHP 8.x / PHP-FPM compatibility
  - Secure path handling (anti path traversal)
  - Session-based authentication (login/password)
  - XSRF protection
  - Safe upload & download handling
- - Recursive permission checks
+ - Recursive permission & delete checks
  - Improved AJAX stability
+ - Minor UI & UX fixes
 
- Use case:
- Secure single-file file manager for internal,
- private or restricted environments.
+ Project Type:
+ Public open-source fork, intended for
+ internal, private or restricted environments.
 
- WARNING:
- Do NOT expose this file to the public internet
- without authentication and proper access controls.
+ Security Notice:
+ This software MUST NOT be exposed to the public
+ internet without authentication and proper
+ access restrictions.
+
+ License:
+ MIT License (original and forked work)
+
+ This fork preserves original credits and license,
+ while extending functionality and security.
 *****************************************************/
 
 declare(strict_types=1);
