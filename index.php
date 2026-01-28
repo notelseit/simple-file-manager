@@ -113,6 +113,7 @@ function json_response(array $data): void {
 	exit;
 }
 function err(int $code, string $msg): void {
+	http_response_code($code);
 	json_response(['error' => ['code'=>$code,'msg'=>$msg]]);
 }
 function rmrf(string $p): void {
@@ -165,8 +166,6 @@ if (!isset($_COOKIE['_sfm_xsrf'])) {
 	$xsrf_ttl = 86400;
 	setcookie('_sfm_xsrf', bin2hex(random_bytes(16)), [
 		'expires' => time() + $xsrf_ttl,
-	setcookie('_sfm_xsrf', bin2hex(random_bytes(16)), [
-		'expires' => 0,
 		'path' => '',
 		'secure' => $secure_cookie,
 		'httponly' => true,
@@ -215,8 +214,6 @@ if ($do==='mkdir') {
 	require_target_dir($target);
 	if (!is_writable($target)) err(403, 'Forbidden');
 	$dir = validate_entry_name($_POST['name'] ?? '');
-	$dir = safe_basename($_POST['name'] ?? '');
-	if ($dir === '') err(422, 'Invalid name');
 	if (!mkdir("$target/$dir", 0755)) err(500, 'Unable to create directory');
 	exit;
 }
@@ -227,8 +224,6 @@ if ($do==='upload') {
 	if (!is_uploaded_file($_FILES['file_data']['tmp_name'])) err(400, 'Invalid upload');
 	$name = validate_entry_name($_FILES['file_data']['name'] ?? '');
 	if (file_exists("$target/$name")) err(409, 'File exists');
-	$name = safe_basename($_FILES['file_data']['name'] ?? '');
-	if ($name === '') err(422, 'Invalid name');
 	if (!move_uploaded_file($_FILES['file_data']['tmp_name'], "$target/$name")) {
 		err(500, 'Upload failed');
 	}
@@ -241,8 +236,6 @@ if ($do==='download') {
 	header('Content-Length: '.(string)filesize($target));
 	header('X-Content-Type-Options: nosniff');
 	header('Cache-Control: private, no-store, max-age=0');
-	header('Content-Type: application/octet-stream');
-	header('Content-Length: '.(string)filesize($target));
 	header('Content-Disposition: attachment; filename="'.basename($target).'"');
 	readfile($target); exit;
 }
