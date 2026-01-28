@@ -129,11 +129,36 @@ function is_recursively_deleteable(string $d): bool {
 	}
 	return true;
 }
+function is_deleteable(string $p): bool {
+	if (is_dir($p)) {
+		return is_writable(dirname($p)) && is_recursively_deleteable($p);
+	}
+	if (is_file($p)) {
+		return is_writable(dirname($p));
+	}
+	return false;
+}
+function require_target_dir(string $p): void {
+	if (!is_dir($p)) {
+		err(412, 'Not a directory');
+	}
+}
+function safe_basename(string $name): string {
+	$name = basename($name);
+	return trim($name);
+}
 
 /* ===================== XSRF ===================== */
 
 if (!isset($_COOKIE['_sfm_xsrf'])) {
-	setcookie('_sfm_xsrf', bin2hex(random_bytes(16)), 0, '', '', false, true);
+	$secure_cookie = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+	setcookie('_sfm_xsrf', bin2hex(random_bytes(16)), [
+		'expires' => 0,
+		'path' => '',
+		'secure' => $secure_cookie,
+		'httponly' => true,
+		'samesite' => 'Lax',
+	]);
 }
 $XSRF = $_COOKIE['_sfm_xsrf'] ?? '';
 if ($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['xsrf']??'')!==$XSRF) {
@@ -151,7 +176,7 @@ if ($target===false || strpos($target,$BASE_DIR)!==0) err(403,'Forbidden');
 $do = $_REQUEST['do'] ?? '';
 
 if ($do==='list') {
-	if (!is_dir($target)) err(412,'Not a directory');
+	require_target_dir($target);
 	$r=[];
 	foreach(array_diff(scandir($target),['.','..']) as $e){
 		if($e===basename(__FILE__)) continue;
@@ -162,22 +187,41 @@ if ($do==='list') {
 			'size'=>$s['size'],
 			'mtime'=>$s['mtime'],
 			'is_dir'=>is_dir($p),
-			'is_deleteable'=>
-				(!is_dir($p)&&is_writable($target))||
-				(is_dir($p)&&is_writable($target)&&is_recursively_deleteable($p))
+			'is_deleteable'=>is_deleteable($p)
 		];
 	}
 	json_response(['success'=>true,'results'=>$r]);
 }
 
-if ($do==='delete') { rmrf($target); exit; }
-if ($do==='mkdir') { mkdir("$target/".basename($_POST['name']??''),0755); exit; }
+if ($do==='delete') {
+	if (!is_deleteable($target)) err(403, 'Forbidden');
+	rmrf($target);
+	exit;
+}
+if ($do==='mkdir') {
+	require_target_dir($target);
+	if (!is_writable($target)) err(403, 'Forbidden');
+	$dir = safe_basename($_POST['name'] ?? '');
+	if ($dir === '') err(422, 'Invalid name');
+	if (!mkdir("$target/$dir", 0755)) err(500, 'Unable to create directory');
+	exit;
+}
 if ($do==='upload') {
-	move_uploaded_file($_FILES['file_data']['tmp_name'],
-		"$target/".basename($_FILES['file_data']['name']));
+	require_target_dir($target);
+	if (!is_writable($target)) err(403, 'Forbidden');
+	if (!isset($_FILES['file_data'])) err(422, 'Missing file');
+	if (!is_uploaded_file($_FILES['file_data']['tmp_name'])) err(400, 'Invalid upload');
+	$name = safe_basename($_FILES['file_data']['name'] ?? '');
+	if ($name === '') err(422, 'Invalid name');
+	if (!move_uploaded_file($_FILES['file_data']['tmp_name'], "$target/$name")) {
+		err(500, 'Upload failed');
+	}
 	exit;
 }
 if ($do==='download') {
+	if (!is_file($target) || !is_readable($target)) err(404, 'Not found');
+	header('Content-Type: application/octet-stream');
+	header('Content-Length: '.(string)filesize($target));
 	header('Content-Disposition: attachment; filename="'.basename($target).'"');
 	readfile($target); exit;
 }
